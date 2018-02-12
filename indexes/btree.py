@@ -100,16 +100,3 @@ class BTree:
             return None
         else:
             return self.split(node)
-
-    def print_tree(self, node, height, indent):
-        children = node.children
-        st = ''
-        if height == 0:
-            for j in range(0, node.number_of_children):
-                st += indent + '(' + str(children[j].key) + ' ' + str(children[j].value) + ')\n'
-        else:
-            for j in range(0, node.number_of_children):
-                if j > 0:
-                    st += indent + '<' + str(children[j].key) + '>\n'
-                st += self.print_tree(children[j].next_node, height-1, indent + '      ')
-        return st
