@@ -5,9 +5,7 @@ Created on Sat Feb 10 12:41:28 2018
 
 @author: zytfo
 """
-from random import randint
-import timeit
-from tables.item import Item
+
 
 class BTree:
 
@@ -40,11 +38,11 @@ class BTree:
         children = x.children
         if height == 0:
             for j in range(0, x.number_of_children):
-                if key is children[j].key:
+                if key.key() is children[j].key:
                     return children[j]
         else:
             for j in range(0, x.number_of_children):
-                if (j+1 == x.number_of_children) or (key < children[j+1].key):
+                if (j+1 == x.number_of_children) or (key.key() < children[j+1].key):
                     return self.search(children[j].next_node, key, height-1)
         return None
 

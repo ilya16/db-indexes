@@ -20,10 +20,11 @@ naive_index = NaiveIndex(a_long_list)
 
 # measure naive time
 start = timeit.default_timer()
-naive_index.look_up(item)
+item = naive_index.look_up(item)
 print("Elapsed time for Loop: {}".format(timeit.default_timer() - start))
 # end measure naive time
 
+print("Got item: ({0}, {1})".format(item.key(), item.value()))
 
 # =============== Bitmap Index ===============
 
@@ -39,18 +40,17 @@ for item in items:
     print("Got item: ({0}, {1})".format(item.key(), item.value()))
 
 
-# =============== BTree Index ===============
+# # =============== BTree Index ===============
 
 btree_index = BTree(a_long_list)
 
 # measure index lookup term
 start = timeit.default_timer()
-items = btree_index.look_up(item)
+item = btree_index.look_up(item)
 print("Elapsed time for Btree index: {}".format(timeit.default_timer() - start))
 # end measure index lookup term
 
-for item in items:
-    print("Got item: ({0}, {1})".format(item.key(), item.value()))
+print("Got item: ({0}, {1})".format(item.key, item.value))
 
 
 # =============== Hash Index ===============
