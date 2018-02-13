@@ -25,14 +25,46 @@ class HashIndex:
         :return:        list of matching items
         """
         nodes = self.hash_table.get(item.key())
-        result = []
 
+        result = []
         for node in nodes:
             # checking that node's key is the needed one by referencing the table
             if self.table[node.value].key() == item.key():
                 result.append(self.table[node.value])
 
         return result
+
+    def insert_item(self, item):
+        """
+        Inserts information about new item in the table to the index.
+        :param item:    inserted item
+        """
+        self.table.append(item)
+        self.hash_table.put(item.key(), len(self.table) - 1)
+
+    def update_item(self, tid, item):
+        """
+        Updates values of item at tid in the table and the index.
+        :param tid:
+        :param item:
+        :return:
+        """
+        old_item = self.table[tid]
+        if old_item.key() == item.key():
+            self.table[tid] = item
+        else:
+            self.hash_table.remove(old_item.key(), tid)
+            self.hash_table.put(item.key(), tid)
+
+    def delete_item(self, tid):
+        """
+        Deletes the item information from the index.
+        :param tid:
+        :return:
+        """
+        old_item = self.table[tid]
+        self.hash_table.remove(old_item.key(), tid)
+        # self.table.pop(tid)
 
     def __str__(self):
         """
@@ -93,9 +125,6 @@ class HashTable:
         """
         hash_code = self.hash_code(key)
 
-        if self.size + 1 >= len(self.buckets) * self.load_factor:
-            self.resize()
-
         index = self.index_for(hash_code)
 
         # first node in the corresponding bucket
@@ -118,6 +147,9 @@ class HashTable:
 
         if not transfer:
             self.size += 1
+            # resize if load of buckets has become high
+            if self.size >= len(self.buckets) * self.load_factor:
+                self.resize()
 
     def get(self, key):
         """
@@ -144,12 +176,51 @@ class HashTable:
         else:
             return None
 
-    def resize(self):
+    def remove(self, key, value):
+        """
+        Removes the node from the Hash Table.
+        :param key:     key of the node
+        :param value:   value of the node
+        """
+        hash_code = self.hash_code(key)
+        index = self.index_for(hash_code)
+        node = self.buckets[index]
+
+        if node is not None:
+            prev_node = None
+            while node.next_node is not None and node.hash_code != hash_code:
+                prev_node = node
+                node = node.next_node
+
+            prev_node = prev_node
+            if node is not None:
+                while node is not None and node.hash_code == hash_code:
+                    if node.value == value:
+                        if prev_node is None:
+                            # deletion of first node in the bucket
+                            self.buckets[index] = node.next_node
+                        else:
+                            prev_node.next_node = node.next_node
+                        node = None
+                        self.size -= 1
+                    else:
+                        prev_node = node
+                        node = node.next_node
+
+        # resize if load of buckets has become low
+        if self.size - 1 < len(self.buckets) * self.load_factor / 2:
+            self.resize(factor=0.5)
+
+        return
+
+    def resize(self, factor=2.0):
         """
         Doubles the capacity of the the hash table.
+
+        :param factor:  len(new_buckets) = len(old_buckets) * factor
         """
         old_buckets = self.buckets
-        self.buckets = [None for i in range(len(self.buckets) * 2)]
+        self.buckets = [None for i in range(int(len(self.buckets) * factor))]
 
         for node in old_buckets:
             if node is not None:
