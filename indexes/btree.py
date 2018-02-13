@@ -10,7 +10,7 @@ Created on Sat Feb 10 12:41:28 2018
 class BTree:
 
     def __init__(self, list):
-        self.degree = 4
+        self.degree = 20
         self.root = None
         self.height = 0
         self.n = 0                                        # number of key-value
@@ -33,18 +33,19 @@ class BTree:
         self.root = self.Node(0, self.degree)
 
     def get_value_by_key(self, key):
-        return self.search(self.root, key, self.height)
+        return self.search(self.root, key, self.height, [])
 
-    def search(self, x, key, height):
+    def search(self, x, key, height, return_list):
         children = x.children
         if height == 0:
             for j in range(0, x.number_of_children):
                 if key.key() is children[j].key and children[j].is_deleted is False:
-                    return children[j]
+                    return_list.append(children[j])
+            return return_list
         else:
             for j in range(0, x.number_of_children):
                 if (j+1 == x.number_of_children) or (key.key() < children[j+1].key):
-                    return self.search(children[j].next_node, key, height-1)
+                    return self.search(children[j].next_node, key, height-1, return_list)
         return None
 
     def look_up(self, key):
@@ -52,7 +53,7 @@ class BTree:
     
     def remove_element(self, key):
         el = self.look_up(key)
-        if not el is None:
+        if el is not None:
             el.is_deleted = True
             return True
         else:

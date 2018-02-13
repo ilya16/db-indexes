@@ -9,7 +9,7 @@ class BitmapIndex:
         self.initial_table = initial_table
         self.build_index(initial_table)
 
-    def lookup(self, item):
+    def look_up(self, item):
         return self.initial_table[self.bitmap_table[item].get_row_ids()[0]]
 
     def build_index(self, item_attribute):

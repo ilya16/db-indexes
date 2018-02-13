@@ -43,8 +43,8 @@ t_bitmap_idx = timeit.default_timer() - start
 print("Elapsed time for Bitmap index: {}".format(t_bitmap_idx))
 print("Faster than Naive Search in {:.2f} times".format(t_no_idx/t_bitmap_idx))
 
-for item in found_items:
-    print("Got item: ({0}, {1})".format(item.key(), item.value()))
+#for item in found_items:
+#    print("Got item: ({0}, {1})".format(item.key(), item.value()))
 
 
 print("\n =============== BTree Index  =============== ")
@@ -53,14 +53,15 @@ btree_index = BTree(a_long_list)
 
 # measure index lookup term
 start = timeit.default_timer()
-found_item = btree_index.look_up(item_of_interest)
+found_items = btree_index.look_up(item_of_interest)
 t_btree_idx = timeit.default_timer() - start
 # end measure index lookup term
 
 print("Elapsed time for Btree index: {}".format(t_btree_idx))
 print("Faster than Naive Search in {:.2f} times".format(t_no_idx/t_btree_idx))
 
-print("Got item: ({0}, {1})".format(found_item.key, found_item.value))
+for item in found_items:
+    print("Got item: ({0}, {1})".format(item.key, item.value))
 
 
 print("\n =============== Hash Index =============== ")
