@@ -34,6 +34,13 @@ class HashIndex:
 
         return result
 
+    def __str__(self):
+        """
+        Returns a string representation of the Hash Index
+        :return:    str value
+        """
+        return str(self.hash_table)
+
 
 class HashTable:
 
@@ -96,10 +103,13 @@ class HashTable:
 
         if node is not None:
             # trying to find the node with the same hash_code
-            while node is not None and node.hash_code != hash_code:
+            while node.next_node is not None and node.hash_code != hash_code:
                 node = node.next_node
 
-            new_node = self.Node(hash_code, key, value, node.next_node)
+            if node.next_node is None:
+                new_node = self.Node(hash_code, key, value, None)
+            else:
+                new_node = self.Node(hash_code, key, value, node.next_node)
             node.next_node = new_node
 
         else:
@@ -112,7 +122,7 @@ class HashTable:
     def get(self, key):
         """
         Returns a list of nodes matching the hash code of the key.
-        :param key:     ley
+        :param key:     key
         :return:        a list of nodes
         """
         hash_code = self.hash_code(key)
@@ -149,7 +159,7 @@ class HashTable:
 
     def __str__(self):
         """
-        Builds a string representation of the Hash Table
+        Returns a string representation of the Hash Table
         :return:    str value
         """
         result = ""
@@ -158,7 +168,7 @@ class HashTable:
             result += "Bucket {:2d}: ".format(i)
             if node is not None:
                 while node is not None:
-                    result += " [{}]({})({}) ".format(node.key, node.hash_code, node.tid)
+                    result += " [{}]({})({}) ".format(node.key, node.hash_code, node.value)
                     node = node.next_node
             result += "\n"
         return result
