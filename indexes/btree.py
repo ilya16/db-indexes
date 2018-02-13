@@ -23,9 +23,10 @@ class BTree:
             self.children = [None] * t
 
     class Entry:
-        def __init__(self, key, value, next_node):
+        def __init__(self, key, value, is_deleted, next_node):
             self.key = key
             self.value = value
+            self.is_deleted = is_deleted
             self.next_node = next_node
 
     def b_tree(self):
@@ -38,7 +39,7 @@ class BTree:
         children = x.children
         if height == 0:
             for j in range(0, x.number_of_children):
-                if key.key() is children[j].key:
+                if key.key() is children[j].key and children[j].is_deleted is False:
                     return children[j]
         else:
             for j in range(0, x.number_of_children):
@@ -48,6 +49,14 @@ class BTree:
 
     def look_up(self, key):
         return self.get_value_by_key(key)
+    
+    def remove_element(self, key):
+        el = self.look_up(key)
+        if not el is None:
+            el.is_deleted = True
+            return True
+        else:
+            return False
 
     def upload(self, l):
         for element in l:
@@ -59,8 +68,8 @@ class BTree:
         if new_n is None:
             return
         subnode = self.Node(2, self.degree)
-        subnode.children[0] = self.Entry(self.root.children[0].key, None, self.root)
-        subnode.children[1] = self.Entry(new_n.children[0].key, None, new_n)
+        subnode.children[0] = self.Entry(self.root.children[0].key, None, self.root.children[0].is_deleted, self.root)
+        subnode.children[1] = self.Entry(new_n.children[0].key, None, new_n.children[0].is_deleted, new_n)
         self.root = subnode
         self.height += 1
 
@@ -74,7 +83,7 @@ class BTree:
     def insert(self, node, key, value, height):
         j = 0
         flag = False
-        subnode = self.Entry(key, value, None)
+        subnode = self.Entry(key, value, False, None)
         if height == 0:
             for j in range(0, node.number_of_children):
                 if key < node.children[j].key:
@@ -84,7 +93,7 @@ class BTree:
                 j = node.number_of_children
         else:
             for j in range(0, node.number_of_children):
-                if (j+1 == node.number_of_children) or (key < node.children[j+1].key):
+                if (j + 1 == node.number_of_children) or (key < node.children[j+1].key):
                     new_n = self.insert(node.children[j].next_node, key, value, height-1)
                     j += 1
                     if new_n is None:
