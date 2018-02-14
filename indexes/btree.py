@@ -5,108 +5,309 @@ Created on Sat Feb 10 12:41:28 2018
 
 @author: zytfo
 """
+import math
 
+
+def index_of(a_list, value):
+    try:
+        return a_list.index(value)
+    except ValueError:
+        return None
+
+class Node:
+
+    def __init__(self):
+        self.entries = []
+        self.parent = None
+        self.right_most = None
+
+    def to_string(self):
+        return self.entries
+
+    def add_entry(self, entry):
+        self.entries.append(entry)
+        self.entries.sort(key=entry.compare_to, reverse=True)
+
+    def first_entry(self):
+        if self.entry_size() > 0:
+            return self.entries[0]
+        return None
+
+    def last_entry(self):
+        if self.entry_size() > 0:
+            return self.entries[self.entry_size() - 1]
+        return None
+
+    def remove_entry(self, key):
+        for entry in self.entries:
+            if entry.key == key:
+                self.entries.remove(entry)
+                break
+
+    def remove_entry(self, entry):
+        self.entries.remove(entry)
+
+    def add_entries(self, entries):
+        self.entries.extend(entries)
+        self.entries.sort()
+
+    def entries(self):
+        return self.entries
+
+    def entry_size(self):
+        return len(self.entries)
+
+    def get_left_entries(self):
+        return self.entries[0: self.entry_size() // 2]
+
+    def get_right_entries(self):
+        return self.entries[self.entry_size() // 2 + 1: self.entry_size()]
+
+    def get_middle_entry(self):
+        return self.entries[self.entry_size() // 2]
+
+    def get_middle_left_entry(self):
+        return self.entries[self.entry_size() // 2 - 1]
+
+    def get_middle_right_entry(self):
+        return self.entries[self.entry_size() // 2 + 1]
+
+    def left_entry(self, entry):
+        index = self.index(self.entries, entry)
+        if index > 0 and index < self.entry_size():
+            return self.entries[index - 1]
+        return None
+
+    def right_entry(self, entry):
+        index = index_of(self.entries, entry)
+        if index >= 0 and index < self.entry_size() - 1:
+            return self.entries[index + 1]
+        return None
+
+class Entry:
+    def __init__(self, key, value, container):
+        self.key = key
+        self.value = value
+        self.left = None
+
+    def print_entry(self):
+        return "({0},{1},{2})".format(self.key, self.value, self.left)
+
+
+    def compare_to(self, o):
+        return ((self.key > o.key) - (self.key < o.key))
+    # def compare_to(self, o):
+    #     print(type(o.key) is str)
+    #     return self.key - o.key
 
 class BTree:
 
-    def __init__(self, list):
-        self.degree = 20
-        self.root = None
+    def __init__(self, list_of_items):
+        self.degree = 3
+        self.root = Node()
         self.height = 0
-        self.n = 0                                        # number of key-value
-        self.b_tree()
-        self.upload(list)
+        self.list_of_items = list_of_items
+        self._insert(list_of_items)
 
-    class Node:
-        def __init__(self, k, t):
-            self.number_of_children = k                   # number of children
-            self.children = [None] * t
+    def split(self, node):
+        parent_node = node.parent
+        if parent_node is None:
+            parent_node = Node()
+            self.root = parent_node
+            self.height += 1
 
-    class Entry:
-        def __init__(self, key, value, is_deleted, next_node):
-            self.key = key
-            self.value = value
-            self.is_deleted = is_deleted
-            self.next_node = next_node
+        left_node = Node()
+        left_node.parent = parent_node
+        left_node.add_entries(node.get_left_entries())
 
-    def b_tree(self):
-        self.root = self.Node(0, self.degree)
+        right_node = Node()
+        right_node.parent = parent_node
+        right_node.right_most = node.right_most
+        right_node.add_entries(node.get_right_entries())
 
-    def get_value_by_key(self, key):
-        return self.search(self.root, key, self.height, [])
+        middle_entry = node.get_middle_entry()
+        left_entry = node.get_middle_left_entry()
+        if left_entry is not None:
+            left_node.right_most = middle_entry.left
 
-    def search(self, x, key, height, return_list):
-        children = x.children
-        if height == 0:
-            for j in range(0, x.number_of_children):
-                if key.key() is children[j].key and children[j].is_deleted is False:
-                    return_list.append(children[j])
-            return return_list
+        middle_entry.left = left_node
+        parent_node.add_entry(middle_entry)
+
+        right_entry = parent_node.right_entry(middle_entry)
+        if right_entry is None:
+            parent_node.right_most = right_node
         else:
-            for j in range(0, x.number_of_children):
-                if (j+1 == x.number_of_children) or (key.key() < children[j+1].key):
-                    return self.search(children[j].next_node, key, height-1, return_list)
+            right_entry.left = right_node
+
+        for e in left_node.entries:
+            if e.left is not None:
+                e.left.parent = left_node
+
+        if left_node.right_most is not None:
+            left_node.right_most.parent = left_node
+
+        for e in right_node.entries:
+            if e.left is not None:
+                e.left.parent = right_node
+
+        if right_node.right_most is not None:
+            right_node.right_most.parent = right_node
+
+        if parent_node.entry_size() >= self.degree:
+            self.split(parent_node)
+
+    def insert(self, key, value, node):
+        if node.right_most is None:
+            node.add_entry(Entry(key, value, node))
+
+            if node.entry_size() >= self.degree:
+                self.split(node)
+        else:
+            index = 0
+            for entry in node.entries:
+                if key > entry.key:
+                    index += 1
+                    continue
+                elif key == entry.key:
+                    return
+                elif key < entry.key:
+                    self.insert(key, value, entry.left)
+                    return
+
+            if index >= node.entry_size():
+                self.insert(key, value, node.right_most)
+
+    def rebalance(self, node, deleted):
+        separator = None
+        parent_node = node.parent
+        children = []
+        for entry in parent_node.entries:
+            if entry.left == node:
+                separator = entry
+            children.append(entry.left)
+        if parent_node.right_most == node:
+            separator = parent_node.last_entry()
+
+        children.append(parent_node.right_most)
+        index = index_of(children, node)
+        if index < len(children) - 1 and children[index + 1].entry_size() > math.ceil((self.degree / 2)):
+            right_siblings = children[index + 1]
+            right_sibling = right_siblings.first_entry()
+            right_sibling.left = separator.left
+            separator.left = deleted.left
+            node.add_entry(separator)
+            parent_node.remove_entry(separator)
+            parent_node.add_entry(right_sibling)
+            right_siblings.remove_entry(right_sibling)
+            return
+        elif index > 0 and children[index - 1].entry_size() > math.ceil((self.degree / 2)):
+            separator = parent_node.left_entry(separator)
+            left_siblings = children[index - 1]
+            left_sibling = left_siblings.last_entry()
+            left_sibling.left = separator.left
+            separator.left = deleted.left
+            node.add_entry(separator)
+            parent_node.remove_entry(separator)
+            parent_node.add_entry(left_sibling)
+            left_siblings.remove_entry(left_sibling)
+            return
+
+        else:
+            new_node = Node()
+            new_node.add_entries(node.entries)
+            if index < len(children) - 1:
+                right_siblings = children[index + 1]
+                new_node.add_entries(right_siblings.entries)
+                separator.left = node.right_most
+                new_node.right_most = right_siblings.right_most
+            elif index > 0:
+                left_siblings = children[index - 1]
+                new_node.add_entries(left_siblings.entries)
+                separator.left = left_siblings.right_most
+                if node.entry_size() > 0:
+                    new_node.right_most = node.first_entry().left
+                else:
+                    new_node.right_most = node.right_most
+            new_node.add_entry(separator)
+            for e in new_node.entries:
+                if e.left is not None:
+                    e.left.parent = new_node
+            if new_node.right_most is not None:
+                new_node.right_most.parent = new_node
+            new_node.parent = parent_node
+            right_entry = parent_node.right_entry(separator)
+            if right_entry is not None:
+                right_entry.left = new_node
+            else:
+                parent_node.right_most = new_node
+            parent_node.remove_entry(separator)
+
+            if parent_node.entry_size() < math.ceil(self.degree / 2):
+                if parent_node.parent is None:
+                    new_node.parent = None
+                    self.root = new_node
+                    self.height -= 1
+                else:
+                    self.rebalance(parent_node, separator)
+
+    def delete(self, entry):
+        node = self.get_entry_node(entry, self.root)
+        if node.right_most is None:
+            node.remove_entry(entry)
+            if node.entry_size() < math.ceil(self.degree / 2) and self.height is not 0:
+                self.rebalance(node, entry)
+        else:
+            right_most = entry.left
+            while right_most.right_most is not None:
+                right_most = right_most.right_most
+            left_largest = right_most.last_entry()
+            right_most.remove_entry(left_largest)
+            entry.key = left_largest.key
+            entry.value = left_largest.value
+            self.rebalance(right_most, left_largest)
+
+    def get_entry_node(self, en, node):
+        if node is None:
+            return None
+        else:
+            index = 0
+            for entry in node.entries:
+                if en.key > entry.key:
+                    index += 1
+                    continue
+                elif en.key == entry.key:
+                    return node
+                elif en.key < entry.key:
+                    return self.get_entry_node(en, entry.left)
+            if index >= node.entry_size():
+                return self.get_entry_node(en, node.right_most)
+        return None
+
+    def search(self, key, node):
+        if node is None:
+            return None
+        else:
+            index = 0
+            for entry in node.entries:
+                if key.key() > entry.key:
+                    index += 1
+                    continue
+                elif key.key() == entry.key:
+                    return entry
+                elif key.key() < entry.key:
+                    return self.search(key, entry.left)
+
+            if index >= node.entry_size():
+                return self.search(key, node.right_most)
         return None
 
     def look_up(self, key):
-        return self.get_value_by_key(key)
-    
-    def remove_element(self, key):
-        el = self.look_up(key)
-        if el is not None:
-            el.is_deleted = True
-            return True
-        else:
-            return False
+        return self.search(key, self.root)
 
-    def upload(self, l):
-        for element in l:
-           self.put_new_element(element.key(), element.value())
+    def _insert(self, list_of_items):
+        for item in list_of_items:
+            self.insert(item.key(), item.value(), self.root)
 
-    def put_new_element(self, key, value):
-        new_n = self.insert(self.root, key, value, self.height)
-        self.n += 1
-        if new_n is None:
-            return
-        subnode = self.Node(2, self.degree)
-        subnode.children[0] = self.Entry(self.root.children[0].key, None, self.root.children[0].is_deleted, self.root)
-        subnode.children[1] = self.Entry(new_n.children[0].key, None, new_n.children[0].is_deleted, new_n)
-        self.root = subnode
-        self.height += 1
-
-    def split(self, node):
-        subnode = self.Node(self.degree//2, self.degree)
-        node.number_of_children = self.degree//2
-        for j in range(0, self.degree//2):
-            subnode.children[j] = node.children[self.degree//2+j]
-        return subnode
-
-    def insert(self, node, key, value, height):
-        j = 0
-        flag = False
-        subnode = self.Entry(key, value, False, None)
-        if height == 0:
-            for j in range(0, node.number_of_children):
-                if key < node.children[j].key:
-                    flag = True
-                    break
-            if flag is False:
-                j = node.number_of_children
-        else:
-            for j in range(0, node.number_of_children):
-                if (j + 1 == node.number_of_children) or (key < node.children[j+1].key):
-                    new_n = self.insert(node.children[j].next_node, key, value, height-1)
-                    j += 1
-                    if new_n is None:
-                        return None
-                    subnode.key = new_n.children[0].key
-                    subnode.next_node = new_n
-                    break
-        for i in range(node.number_of_children, j, -1):
-            node.children[i] = node.children[i-1]
-        node.children[j] = subnode
-        node.number_of_children += 1
-        if node.number_of_children < self.degree:
-            return None
-        else:
-            return self.split(node)
+    def _delete(self, btree, i):
+        entry = btree.search(i, btree.root)
+        self.delete(entry)
