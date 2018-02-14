@@ -14,91 +14,6 @@ def index_of(a_list, value):
     except ValueError:
         return None
 
-class Node:
-
-    def __init__(self):
-        self.entries = []
-        self.parent = None
-        self.right_most = None
-
-    def to_string(self):
-        return self.entries
-
-    def add_entry(self, entry):
-        self.entries.append(entry)
-        self.entries.sort(key=entry.compare_to, reverse=True)
-
-    def first_entry(self):
-        if self.entry_size() > 0:
-            return self.entries[0]
-        return None
-
-    def last_entry(self):
-        if self.entry_size() > 0:
-            return self.entries[self.entry_size() - 1]
-        return None
-
-    def remove_entry(self, key):
-        for entry in self.entries:
-            if entry.key == key:
-                self.entries.remove(entry)
-                break
-
-    def remove_entry(self, entry):
-        self.entries.remove(entry)
-
-    def add_entries(self, entries):
-        self.entries.extend(entries)
-        # self.entries.sort()
-
-    def entries(self):
-        return self.entries
-
-    def entry_size(self):
-        return len(self.entries)
-
-    def get_left_entries(self):
-        return self.entries[0: self.entry_size() // 2]
-
-    def get_right_entries(self):
-        return self.entries[self.entry_size() // 2 + 1: self.entry_size()]
-
-    def get_middle_entry(self):
-        return self.entries[self.entry_size() // 2]
-
-    def get_middle_left_entry(self):
-        return self.entries[self.entry_size() // 2 - 1]
-
-    def get_middle_right_entry(self):
-        return self.entries[self.entry_size() // 2 + 1]
-
-    def left_entry(self, entry):
-        index = self.index(self.entries, entry)
-        if index > 0 and index < self.entry_size():
-            return self.entries[index - 1]
-        return None
-
-    def right_entry(self, entry):
-        index = index_of(self.entries, entry)
-        if index >= 0 and index < self.entry_size() - 1:
-            return self.entries[index + 1]
-        return None
-
-class Entry:
-    def __init__(self, key, value, container):
-        self.key = key
-        self.value = value
-        self.left = None
-
-    def print_entry(self):
-        return "({0},{1},{2})".format(self.key, self.value, self.left)
-
-
-    def compare_to(self, o):
-        return ((self.key > o.key) - (self.key < o.key))
-    # def compare_to(self, o):
-    #     print(type(o.key) is str)
-    #     return self.key - o.key
 
 class BTree:
 
@@ -311,3 +226,86 @@ class BTree:
     def _delete(self, key):
         entry = self.search(key, self.root)
         self.delete(entry)
+
+
+class Node:
+
+    def __init__(self):
+        self.entries = []
+        self.parent = None
+        self.right_most = None
+
+    def to_string(self):
+        return self.entries
+
+    def add_entry(self, entry):
+        self.entries.append(entry)
+        self.entries.sort(key=entry.compare_to, reverse=True)
+
+    def first_entry(self):
+        if self.entry_size() > 0:
+            return self.entries[0]
+        return None
+
+    def last_entry(self):
+        if self.entry_size() > 0:
+            return self.entries[self.entry_size() - 1]
+        return None
+
+    def remove_entry(self, key):
+        for entry in self.entries:
+            if entry.key == key:
+                self.entries.remove(entry)
+                break
+
+    def remove_entry(self, entry):
+        self.entries.remove(entry)
+
+    def add_entries(self, entries):
+        self.entries.extend(entries)
+
+    def entries(self):
+        return self.entries
+
+    def entry_size(self):
+        return len(self.entries)
+
+    def get_left_entries(self):
+        return self.entries[0: self.entry_size() // 2]
+
+    def get_right_entries(self):
+        return self.entries[self.entry_size() // 2 + 1: self.entry_size()]
+
+    def get_middle_entry(self):
+        return self.entries[self.entry_size() // 2]
+
+    def get_middle_left_entry(self):
+        return self.entries[self.entry_size() // 2 - 1]
+
+    def get_middle_right_entry(self):
+        return self.entries[self.entry_size() // 2 + 1]
+
+    def left_entry(self, entry):
+        index = index_of(self.entries, entry)
+        if index > 0 and index < self.entry_size():
+            return self.entries[index - 1]
+        return None
+
+    def right_entry(self, entry):
+        index = index_of(self.entries, entry)
+        if index >= 0 and index < self.entry_size() - 1:
+            return self.entries[index + 1]
+        return None
+
+
+class Entry:
+    def __init__(self, key, value, cont):
+        self.key = key
+        self.value = value
+        self.left = None
+
+    def print_entry(self):
+        return "({0},{1},{2})".format(self.key, self.value, self.left)
+
+    def compare_to(self, o):
+        return (self.key > o.key) - (self.key < o.key)
