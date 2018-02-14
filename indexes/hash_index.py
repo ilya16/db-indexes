@@ -124,17 +124,10 @@ class HashTable:
         :param transfer:    is data being transferred from old version (used in resize())
         """
         hash_code = self.hash_code(key)
-
         index = self.index_for(hash_code)
-
-        # first node in the corresponding bucket
-        node = self.buckets[index]
+        node = self._get_node(hash_code)
 
         if node is not None:
-            # trying to find the node with the same hash_code
-            while node.next_node is not None and node.hash_code != hash_code:
-                node = node.next_node
-
             if node.next_node is None:
                 new_node = self.Node(hash_code, key, value, None)
             else:
@@ -158,21 +151,14 @@ class HashTable:
         :return:        a list of nodes
         """
         hash_code = self.hash_code(key)
-        index = self.index_for(hash_code)
-        node = self.buckets[index]
+        node = self._get_node(hash_code)
 
         if node is not None:
-            while node.next_node is not None and node.hash_code != hash_code:
+            result = []
+            while node is not None and node.hash_code == hash_code:
+                result.append(node)
                 node = node.next_node
-
-            if node is None:
-                return None
-            else:
-                result = []
-                while node is not None and node.hash_code == hash_code:
-                    result.append(node)
-                    node = node.next_node
-                return result
+            return result
         else:
             return None
 
@@ -184,15 +170,9 @@ class HashTable:
         """
         hash_code = self.hash_code(key)
         index = self.index_for(hash_code)
-        node = self.buckets[index]
+        prev_node, node = self._get_node(hash_code, return_prev=True)
 
         if node is not None:
-            prev_node = None
-            while node.next_node is not None and node.hash_code != hash_code:
-                prev_node = node
-                node = node.next_node
-
-            prev_node = prev_node
             if node is not None:
                 while node is not None and node.hash_code == hash_code:
                     if node.value == value:
@@ -228,6 +208,26 @@ class HashTable:
                     self.put(node.key, node.value, transfer=True)
                     node = node.next_node
 
+    def _get_node(self, hash_code, return_prev=False):
+        """
+        Returns the first node in the hash table matching the hash_code
+        :param hash_code:       hash_code value
+        :param return_prev:     set True if you want to get the previous node
+        :return:                the node matching the hash_code, or the previous one in the bucket
+        """
+        # first node in the corresponding bucket
+        node = self.buckets[self.index_for(hash_code)]
+
+        if node is not None:
+            prev_node = None
+            while node.next_node is not None and node.hash_code != hash_code:
+                prev_node = node
+                node = node.next_node
+
+            return (prev_node, node) if return_prev else node
+        else:
+            return None
+
     def __str__(self):
         """
         Returns a string representation of the Hash Table
@@ -247,4 +247,3 @@ class HashTable:
 
 if __name__ == "__main__":
     pass
-
