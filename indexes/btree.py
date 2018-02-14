@@ -307,5 +307,5 @@ class Entry:
     def print_entry(self):
         return "({0},{1},{2})".format(self.key, self.value, self.left)
 
-    def compare_to(self, o):
-        return (self.key > o.key) - (self.key < o.key)
+    def compare_to(self, other):
+        return (self.key > other.key) - (self.key < other.key)
