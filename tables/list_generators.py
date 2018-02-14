@@ -46,7 +46,7 @@ def get_list_of_random_items(list_size, max_number=10000):
 
 
 def get_list_with_string_keys(list_size):
-    return [Item(uuid4(), generate_item_value(i)) for i in range(list_size)]
+    return [Item(str(uuid4()), generate_item_value(i)) for i in range(list_size)]
 
 
 def get_item_of_interest(list_of_items, item_index=None):
@@ -59,6 +59,6 @@ def get_item_of_interest(list_of_items, item_index=None):
     """
 
     if item_index is None:
-        return list_of_items[randint(int(len(list_of_items) / 2), len(list_of_items))]
+        return list_of_items[randint(int(len(list_of_items) / 2), len(list_of_items) - 1)]
     else:
         return list_of_items[item_index]
