@@ -49,7 +49,7 @@ class Node:
 
     def add_entries(self, entries):
         self.entries.extend(entries)
-        self.entries.sort()
+        # self.entries.sort()
 
     def entries(self):
         return self.entries
@@ -266,21 +266,21 @@ class BTree:
             entry.value = left_largest.value
             self.rebalance(right_most, left_largest)
 
-    def get_entry_node(self, en, node):
+    def get_entry_node(self, e, node):
         if node is None:
             return None
         else:
             index = 0
             for entry in node.entries:
-                if en.key > entry.key:
+                if e.key > entry.key:
                     index += 1
                     continue
-                elif en.key == entry.key:
+                elif e.key == entry.key:
                     return node
-                elif en.key < entry.key:
-                    return self.get_entry_node(en, entry.left)
+                elif e.key < entry.key:
+                    return self.get_entry_node(e, entry.left)
             if index >= node.entry_size():
-                return self.get_entry_node(en, node.right_most)
+                return self.get_entry_node(e, node.right_most)
         return None
 
     def search(self, key, node):
@@ -289,12 +289,12 @@ class BTree:
         else:
             index = 0
             for entry in node.entries:
-                if key.key() > entry.key:
+                if key > entry.key:
                     index += 1
                     continue
-                elif key.key() == entry.key:
+                elif key == entry.key:
                     return entry
-                elif key.key() < entry.key:
+                elif key < entry.key:
                     return self.search(key, entry.left)
 
             if index >= node.entry_size():
@@ -308,6 +308,6 @@ class BTree:
         for item in list_of_items:
             self.insert(item.key(), item.value(), self.root)
 
-    def _delete(self, btree, i):
-        entry = btree.search(i, btree.root)
+    def _delete(self, key):
+        entry = self.search(key, self.root)
         self.delete(entry)
