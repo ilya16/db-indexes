@@ -1,6 +1,7 @@
 from random import randint
-from uuid import UUID, uuid4
+from uuid import uuid4
 from tables.item import Item
+import csv
 
 
 def generate_item_value(key):
@@ -49,6 +50,19 @@ def get_list_with_string_keys(list_size):
     return [Item(str(uuid4()), generate_item_value(i)) for i in range(list_size)]
 
 
+def get_list_from_file(path):
+    with open(path, "r+") as f:
+        reader = csv.reader(f)
+        return [Item(row[0], row[1]) for row in reader]
+
+
+def output_list_to_file(lst, path):
+    with open(path, "w+") as f:
+        writer = csv.writer(f)
+        for item in lst:
+            writer.writerow([item.key(), item.value()])
+
+
 def get_item_of_interest(list_of_items, item_index=None):
     """
     Picks n element from right half of list.
@@ -62,3 +76,7 @@ def get_item_of_interest(list_of_items, item_index=None):
         return list_of_items[randint(int(len(list_of_items) / 2), len(list_of_items) - 1)]
     else:
         return list_of_items[item_index]
+
+
+if __name__ == "__main__":
+    pass
