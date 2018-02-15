@@ -144,9 +144,9 @@ class BTree:
                 elif key == entry.key:
                     return entry
                 elif key < entry.key:
-                    return self.search(key, entry.left)
+                    return [self.search(key, entry.left)]
             if index >= node.entry_size():
-                return self.search(key, node.right_most)
+                return [self.search(key, node.right_most)]
         return None
 
     def rebalance(self, node, deleted_node, ):
@@ -224,12 +224,12 @@ class BTree:
 
     def look_up(self, key):
         """ Search preparation """
-        return self.search(key, self.root)
+        return self.search(key, self.root).value
 
     def _insert(self, list_of_items):
         """ Insert preparation """
-        for item in list_of_items:
-            self.insert(item.key(), item.value(), self.root)
+        for rid, item in enumerate(list_of_items):
+            self.insert(item.key(), rid, self.root)
 
     def _delete(self, key):
         """ Delete preparation """

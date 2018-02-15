@@ -1,3 +1,6 @@
+from indexes.fasthash import murmurhash2
+
+
 class HashIndex:
     """ Implements Hash Index. """
 
@@ -7,7 +10,7 @@ class HashIndex:
         :param table:           table with items (rows) upon which index is built
         """
         self.hash_table = HashTable()
-        self.table = table
+        self.keys = [item.key() for item in table]
         self.build_index(table)
 
     def build_index(self, table):
@@ -15,56 +18,54 @@ class HashIndex:
         Builds a index from the table of key-value items.
         :param table:   table with items (rows)
         """
-        for tid, element in enumerate(table):
-            self.hash_table.put(element.key(), tid)
+        for rid, item in enumerate(table):
+            self.hash_table.put(item.key(), rid)
 
-    def look_up(self, item):
+    def look_up(self, key):
         """
-        Returns a list of items in the table matching the item's key
-        :param item:    interest of search
-        :return:        list of matching items
+        Returns a list of row ids in the table matching the  key
+        :param key:     interest of search
+        :return:        list of row ids matching items
         """
-        nodes = self.hash_table.get(item.key())
+        nodes = self.hash_table.get(key)
 
         result = []
         for node in nodes:
-            # checking that node's key is the needed one by referencing the table
-            if self.table[node.value].key() == item.key():
-                result.append(self.table[node.value])
+            # checking that node's key is the needed one by referencing the list of keys
+            if self.keys[node.value] == key:
+                result.append(node.value)
 
-        return result
+        return result if result else None
 
-    def insert_item(self, item):
+    def insert(self, key):
         """
         Inserts information about new item in the table to the index.
-        :param item:    inserted item
+        :param key:     key of inserted item
         """
-        self.table.append(item)
-        self.hash_table.put(item.key(), len(self.table) - 1)
+        self.keys.append(key)
+        self.hash_table.put(key, len(self.keys) - 1)
 
-    def update_item(self, tid, item):
+    def update(self, rid, key):
         """
-        Updates values of item at tid in the table and the index.
-        :param tid:
-        :param item:
-        :return:
+        Updates values of item at rid in the table and the index.
+        :param rid:     row id
+        :param key:     key of the item to be updated
         """
-        old_item = self.table[tid]
-        if old_item.key() == item.key():
-            self.table[tid] = item
+        old_key = self.keys[rid]
+        if old_key == key:
+            self.keys[rid] = key
         else:
-            self.hash_table.remove(old_item.key(), tid)
-            self.hash_table.put(item.key(), tid)
+            self.hash_table.remove(old_key, rid)
+            self.hash_table.put(key, rid)
 
-    def delete_item(self, tid):
+    def delete(self, rid):
         """
         Deletes the item information from the index.
-        :param tid:
+        :param rid:     row id
         :return:
         """
-        old_item = self.table[tid]
-        self.hash_table.remove(old_item.key(), tid)
-        # self.table.pop(tid)
+        old_key = self.keys[rid]
+        self.hash_table.remove(old_key, rid)
 
     def __str__(self):
         """
@@ -87,7 +88,7 @@ class HashTable:
         self.size = 0
 
     class Node:
-        """ Stores the hash values with corresponding TID numbers (id in the table). """
+        """ Stores the hash values with corresponding rid numbers (row id in the table). """
         def __init__(self, hash_code, key, value, next_node=None):
             """
             Node constructor.
