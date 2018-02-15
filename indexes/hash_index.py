@@ -26,13 +26,15 @@ class HashIndex:
         """
         nodes = self.hash_table.get(key)
 
-        result = []
-        for node in nodes:
-            # checking that node's key is the needed one by referencing the list of keys
-            if self.keys[node.value] == key:
-                result.append(node.value)
-
-        return result if result else None
+        if nodes is not None:
+            result = []
+            for node in nodes:
+                # checking that node's key is the needed one by referencing the list of keys
+                if self.keys[node.value] == key:
+                    result.append(node.value)
+            return result
+        else:
+            return None
 
     def insert(self, *keys):
         """
@@ -127,14 +129,11 @@ class HashTable:
         node = self._get_node(hash_code)
 
         if node is not None:
-            if node.next_node is None:
-                new_node = self.Node(hash_code, key, value, None)
-            else:
-                new_node = self.Node(hash_code, key, value, node.next_node)
+            new_node = self.Node(hash_code, key, value, node.next_node)
             node.next_node = new_node
 
         else:
-            # no nodes in the bucket, add new Entry
+            # no nodes in the bucket, add new one
             self.buckets[index] = self.Node(hash_code, key, value, None)
 
         if not transfer:
@@ -172,19 +171,18 @@ class HashTable:
         prev_node, node = self._get_node(hash_code, return_prev=True)
 
         if node is not None:
-            if node is not None:
-                while node is not None and node.hash_code == hash_code:
-                    if node.value == value:
-                        if prev_node is None:
-                            # deletion of first node in the bucket
-                            self.buckets[index] = node.next_node
-                        else:
-                            prev_node.next_node = node.next_node
-                        node = None
-                        self.size -= 1
+            while node is not None and node.hash_code == hash_code:
+                if node.value == value:
+                    if prev_node is None:
+                        # deletion of first node in the bucket
+                        self.buckets[index] = node.next_node
                     else:
-                        prev_node = node
-                        node = node.next_node
+                        prev_node.next_node = node.next_node
+                    node = None
+                    self.size -= 1
+                else:
+                    prev_node = node
+                    node = node.next_node
 
         # resize if load of buckets has become low
         if self.size - 1 < len(self.buckets) * self.load_factor / 2:

@@ -3,7 +3,7 @@ class NaiveIndex:
 
     def __init__(self, table):
         self.keys = [item.key() for item in table]
-        self.is_deleted = [False for item in table]
+        self.is_deleted = [False for i in range(len(table))]
 
     def look_up(self, key):
         result = []

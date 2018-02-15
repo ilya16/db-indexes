@@ -40,18 +40,22 @@ def test_deletion(indexes, table):
     for index_name in indexes:
         print("\n =============== {:^6} Index =============== ".format(index_name))
 
-        rid = btree_index.look_up(new_item_of_interest.key())
+        index = indexes[index_name]
+
+        rid = index.look_up(new_item_of_interest.key())[0]
         item = table[rid]
         print("Got item: ({0}, {1})".format(item.key(), item.value()))
 
-        indexes[index_name].delete(new_item_of_interest.key())
+        # table.delete(rid) - deleting from the table in database
+        # updating index
+        index.delete(rid)
         print("Deleted: ({0}, {1}).".format(new_item_of_interest.key(), new_item_of_interest.value()))
         print("Searching ({0}, {1}) again.".format(new_item_of_interest.key(), new_item_of_interest.value()))
 
-        rid = btree_index.look_up(new_item_of_interest.key())
+        rid = index.look_up(new_item_of_interest.key())
 
-        if rid is not None:
-            item = table[rid]
+        if rid:
+            item = table[rid[0]]
             print("Oops... Got item: ({0}, {1})".format(item.key(), item.value()))
         else:
             print("Got item: " + str(rid))
@@ -90,3 +94,5 @@ if __name__ == "__main__":
     }
 
     test_indexes(indexes, lst, item_of_interest)
+
+    # test_deletion(indexes, lst)

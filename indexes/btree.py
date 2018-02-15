@@ -19,12 +19,12 @@ def index_of(a_list, value):
 
 class BTree:
     """ Main class of BTree index, takes list of items as a parameter and build an index on this list """
-    def __init__(self, list_of_items):
+    def __init__(self, table):
         self.degree = 3
         self.root = Node()
         self.height = 0
-        self.list_of_items = list_of_items
-        self.insert(list_of_items)
+        self.keys = [item.key() for item in table]
+        self.insert(table)
 
     def split(self, node):
         """ Splitting the node if full """
@@ -144,9 +144,9 @@ class BTree:
                 elif key == entry.key:
                     return entry
                 elif key < entry.key:
-                    return [self.search(key, entry.left)]
+                    return self.search(key, entry.left)
             if index >= node.entry_size():
-                return [self.search(key, node.right_most)]
+                return self.search(key, node.right_most)
         return None
 
     def rebalance(self, node, deleted_node, ):
@@ -224,16 +224,18 @@ class BTree:
 
     def look_up(self, key):
         """ Search preparation """
-        return self.search(key, self.root).value
+        rid = self.search(key, self.root)
+        return [rid.value] if rid is not None else None
 
     def insert(self, list_of_items):
         """ Insert preparation """
         for rid, item in enumerate(list_of_items):
             self._insert(item.key(), rid, self.root)
 
-    def delete(self, key):
+    def delete(self, rid):
         """ Delete preparation """
-        entry = self.search(key, self.root)
+        old_key = self.keys[rid]
+        entry = self.search(old_key, self.root)
         self._delete(entry)
 
 
