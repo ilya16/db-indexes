@@ -1,38 +1,58 @@
 from ctypes import *
 from math import ceil
+import timeit
 
 
 class BitmapIndex:
-
-    def __init__(self, initial_table):
+    def __init__(self, initial_table, compression=True):
+        self.compression = compression
         self.bitmap_table = dict()
         self.initial_table = initial_table
         self.build_index(initial_table)
 
     def look_up(self, item):
-        return self.initial_table[self.bitmap_table[item].get_row_ids()[0]]
+        result = []
+        id_set = self.bitmap_table[item.key()].get_row_ids()
+        for rid in id_set:
+            result.append(self.initial_table[rid])
+        return result
 
-    def build_index(self, item_attribute):
+    def build_index(self, table):
         """Takes table/list/attribute and builds index, which consists of dictionary: Attribute Value => Bitmap."""
-        attribute_cardinality = len(item_attribute)
-        distinct_values = set(item_attribute)
-        for i in distinct_values:
-            self.bitmap_table[i] = Bitmap(attribute_cardinality)
-            # slows down indexing a bit
-            for k in range(0, len(item_attribute)):
-                if i is item_attribute[k]:
-                    self.bitmap_table[i].set_bit(k)
+        attribute_cardinality = len(table)
+
+        start = timeit.default_timer()
+        for rid, element in enumerate(table):
+            if element.key() in self.bitmap_table:
+                self.bitmap_table[element.key()].set_bit(rid)
+            else:
+                self.bitmap_table[element.key()] = Bitmap(attribute_cardinality)
+                self.bitmap_table[element.key()].set_bit(rid)
+
+        elapsed = timeit.default_timer() - start
+        print("Built Bitmap in: {}".format(elapsed))
 
 
 class Bitmap:
     """ Bitmap class defines structure that maintains bit array and operations on it."""
     def __init__(self, cardinality):
+        self.word_size = 32
         self.cardinality = cardinality  # number of rows of input table/list
-        self.bit_array = (c_uint32 * ceil(cardinality / 32))()  # define array of 32-bit unsigned integers
+        self.bit_array = (c_uint32 * ceil(cardinality / self.word_size))()  # define array of 32-bit unsigned integers
 
     def get_row_ids(self):
         """Get Row ID's where bit is set to 1."""
-        return [i for i in range(0, self.cardinality) if self.test_bit(i) == 1]
+        # return [i for i in range(0, self.cardinality) if self.test_bit(i) == 1]
+        rids = []
+        for i in range(0, len(self.bit_array)):
+            word = self.bit_array[i]
+            if word == 0:
+                continue
+            for b in range(0, self.word_size):
+                if (word & 1) != 0:
+                    rids.append(self.word_size*i+b)
+                word = word >> 1
+        return rids
 
     # Bit manipulation in bit array
     def set_bit(self, k):
@@ -97,3 +117,4 @@ class Bitmap:
         for i in range(0, self.cardinality):
             acc += str(self.test_bit(i))
         print(acc)
+

@@ -8,7 +8,7 @@ from indexes.hash_index import HashIndex
 
 # generate a list L of items with len(L) = 20 000
 # each item has a key() and data() methods
-list_size = 1000
+list_size = 20000
 # a_long_list = get_list_of_items(list_size)
 a_long_list = get_list_with_string_keys(list_size)
 
@@ -32,19 +32,19 @@ print("Got item: ({0}, {1})".format(found_item.key(), found_item.value()))
 
 print("\n =============== Bitmap Index =============== ")
 
-# bitmap_index = BitmapIndex(a_long_list)
-#
-# # measure index lookup term
-# start = timeit.default_timer()
-# found_items = bitmap_index.look_up(item_of_interest)
-# t_bitmap_idx = timeit.default_timer() - start
-# # end measure index lookup term
-#
-# print("Elapsed time for Bitmap index: {}".format(t_bitmap_idx))
-# print("Faster than Naive Search in {:.2f} times".format(t_no_idx/t_bitmap_idx))
+bitmap_index = BitmapIndex(a_long_list)
 
-#for item in found_items:
-#    print("Got item: ({0}, {1})".format(item.key(), item.value()))
+# measure index lookup term
+start = timeit.default_timer()
+found_items = bitmap_index.look_up(item_of_interest)
+t_bitmap_idx = timeit.default_timer() - start
+# end measure index lookup term
+
+print("Elapsed time for Bitmap index: {}".format(t_bitmap_idx))
+print("Faster than Naive Search in {:.2f} times".format(t_no_idx/t_bitmap_idx))
+
+for item in found_items:
+    print("Got item: ({0}, {1})".format(item.key(), item.value()))
 
 
 print("\n =============== BTree Index  =============== ")
