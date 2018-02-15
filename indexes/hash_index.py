@@ -1,6 +1,3 @@
-from indexes.fasthash import murmurhash2
-
-
 class HashIndex:
     """ Implements Hash Index. """
 
@@ -37,13 +34,14 @@ class HashIndex:
 
         return result if result else None
 
-    def insert(self, key):
+    def insert(self, *keys):
         """
-        Inserts information about new item in the table to the index.
-        :param key:     key of inserted item
+        Inserts information about new items in the table to the index.
+        :param keys:     key of inserted item
         """
-        self.keys.append(key)
-        self.hash_table.put(key, len(self.keys) - 1)
+        for key in keys:
+            self.keys.append(key)
+            self.hash_table.put(key, len(self.keys) - 1)
 
     def update(self, rid, key):
         """
