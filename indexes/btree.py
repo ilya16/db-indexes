@@ -24,7 +24,7 @@ class BTree:
         self.root = Node()
         self.height = 0
         self.list_of_items = list_of_items
-        self._insert(list_of_items)
+        self.insert(list_of_items)
 
     def split(self, node):
         """ Splitting the node if full """
@@ -74,7 +74,7 @@ class BTree:
         if parent_node.entry_size() >= self.degree:
             self.split(parent_node)
 
-    def insert(self, key, value, node):
+    def _insert(self, key, value, node):
         """ Inserts a key-value pair into the tree"""
         if node.right_most is None:
             node.add_entry(Entry(key, value, node))
@@ -90,13 +90,13 @@ class BTree:
                 elif key == entry.key:
                     return
                 elif key < entry.key:
-                    self.insert(key, value, entry.left)
+                    self._insert(key, value, entry.left)
                     return
 
             if index >= node.entry_size():
-                self.insert(key, value, node.right_most)
+                self._insert(key, value, node.right_most)
 
-    def delete(self, entry):
+    def _delete(self, entry):
         """ Deletes given entry from tree and rebalance it then """
         node = self.get_entry_node(entry, self.root)
         if node.right_most is None:
@@ -226,15 +226,15 @@ class BTree:
         """ Search preparation """
         return self.search(key, self.root).value
 
-    def _insert(self, list_of_items):
+    def insert(self, list_of_items):
         """ Insert preparation """
         for rid, item in enumerate(list_of_items):
-            self.insert(item.key(), rid, self.root)
+            self._insert(item.key(), rid, self.root)
 
-    def _delete(self, key):
+    def delete(self, key):
         """ Delete preparation """
         entry = self.search(key, self.root)
-        self.delete(entry)
+        self._delete(entry)
 
 
 class Node:
