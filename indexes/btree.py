@@ -5,10 +5,12 @@ Created on Sat Feb 10 12:41:28 2018
 
 @author: zytfo
 """
+
 import math
 
 
 def index_of(a_list, value):
+    """ Returns an index of element in given list """
     try:
         return a_list.index(value)
     except ValueError:
@@ -16,7 +18,7 @@ def index_of(a_list, value):
 
 
 class BTree:
-
+    """ Main class of BTree index, takes list of items as a parameter and build an index on this list """
     def __init__(self, list_of_items):
         self.degree = 3
         self.root = Node()
@@ -25,6 +27,7 @@ class BTree:
         self._insert(list_of_items)
 
     def split(self, node):
+        """ Splitting the node if full """
         parent_node = node.parent
         if parent_node is None:
             parent_node = Node()
@@ -72,6 +75,7 @@ class BTree:
             self.split(parent_node)
 
     def insert(self, key, value, node):
+        """ Inserts a key-value pair into the tree"""
         if node.right_most is None:
             node.add_entry(Entry(key, value, node))
 
@@ -92,7 +96,61 @@ class BTree:
             if index >= node.entry_size():
                 self.insert(key, value, node.right_most)
 
-    def rebalance(self, node, deleted):
+    def delete(self, entry):
+        """ Deletes given entry from tree and rebalance it then """
+        node = self.get_entry_node(entry, self.root)
+        if node.right_most is None:
+            node.remove_entry(entry)
+            if node.entry_size() < math.ceil(self.degree / 2) and self.height is not 0:
+                self.rebalance(node, entry)
+        else:
+            right_most = entry.left
+            while right_most.right_most is not None:
+                right_most = right_most.right_most
+            left_largest = right_most.last_entry()
+            right_most.remove_entry(left_largest)
+            entry.key = left_largest.key
+            entry.value = left_largest.value
+            self.rebalance(right_most, left_largest)
+
+    def get_entry_node(self, e, node):
+        """ Returns a node that should be removed """
+        if node is None:
+            return None
+        else:
+            index = 0
+            for entry in node.entries:
+                if e.key > entry.key:
+                    index += 1
+                    continue
+                elif e.key == entry.key:
+                    return node
+                elif e.key < entry.key:
+                    return self.get_entry_node(e, entry.left)
+            if index >= node.entry_size():
+                return self.get_entry_node(e, node.right_most)
+        return None
+
+    def search(self, key, node):
+        """ Searches given key in a tree """
+        if node is None:
+            return None
+        else:
+            index = 0
+            for entry in node.entries:
+                if key > entry.key:
+                    index += 1
+                    continue
+                elif key == entry.key:
+                    return entry
+                elif key < entry.key:
+                    return self.search(key, entry.left)
+            if index >= node.entry_size():
+                return self.search(key, node.right_most)
+        return None
+
+    def rebalance(self, node, deleted_node, ):
+        """ Rebalances tree after deletion """
         separator = None
         parent_node = node.parent
         children = []
@@ -109,7 +167,7 @@ class BTree:
             right_siblings = children[index + 1]
             right_sibling = right_siblings.first_entry()
             right_sibling.left = separator.left
-            separator.left = deleted.left
+            separator.left = deleted_node.left
             node.add_entry(separator)
             parent_node.remove_entry(separator)
             parent_node.add_entry(right_sibling)
@@ -120,13 +178,12 @@ class BTree:
             left_siblings = children[index - 1]
             left_sibling = left_siblings.last_entry()
             left_sibling.left = separator.left
-            separator.left = deleted.left
+            separator.left = deleted_node.left
             node.add_entry(separator)
             parent_node.remove_entry(separator)
             parent_node.add_entry(left_sibling)
             left_siblings.remove_entry(left_sibling)
             return
-
         else:
             new_node = Node()
             new_node.add_entries(node.entries)
@@ -165,147 +222,107 @@ class BTree:
                 else:
                     self.rebalance(parent_node, separator)
 
-    def delete(self, entry):
-        node = self.get_entry_node(entry, self.root)
-        if node.right_most is None:
-            node.remove_entry(entry)
-            if node.entry_size() < math.ceil(self.degree / 2) and self.height is not 0:
-                self.rebalance(node, entry)
-        else:
-            right_most = entry.left
-            while right_most.right_most is not None:
-                right_most = right_most.right_most
-            left_largest = right_most.last_entry()
-            right_most.remove_entry(left_largest)
-            entry.key = left_largest.key
-            entry.value = left_largest.value
-            self.rebalance(right_most, left_largest)
-
-    def get_entry_node(self, e, node):
-        if node is None:
-            return None
-        else:
-            index = 0
-            for entry in node.entries:
-                if e.key > entry.key:
-                    index += 1
-                    continue
-                elif e.key == entry.key:
-                    return node
-                elif e.key < entry.key:
-                    return self.get_entry_node(e, entry.left)
-            if index >= node.entry_size():
-                return self.get_entry_node(e, node.right_most)
-        return None
-
-    def search(self, key, node):
-        if node is None:
-            return None
-        else:
-            index = 0
-            for entry in node.entries:
-                if key > entry.key:
-                    index += 1
-                    continue
-                elif key == entry.key:
-                    return entry
-                elif key < entry.key:
-                    return self.search(key, entry.left)
-
-            if index >= node.entry_size():
-                return self.search(key, node.right_most)
-        return None
-
     def look_up(self, key):
+        """ Search preparation """
         return self.search(key, self.root)
 
     def _insert(self, list_of_items):
+        """ Insert preparation """
         for item in list_of_items:
             self.insert(item.key(), item.value(), self.root)
 
     def _delete(self, key):
+        """ Delete preparation """
         entry = self.search(key, self.root)
         self.delete(entry)
 
 
 class Node:
-
+    """ Node class, contains all entries getting methods """
     def __init__(self):
         self.entries = []
         self.parent = None
         self.right_most = None
 
-    def to_string(self):
-        return self.entries
-
     def add_entry(self, entry):
+        """ Adds an entry into the list of entries """
         self.entries.append(entry)
         self.entries.sort(key=entry.compare_to, reverse=True)
 
     def first_entry(self):
+        """ Returns first entry from list of entries """
         if self.entry_size() > 0:
             return self.entries[0]
         return None
 
     def last_entry(self):
+        """ Returns last entry from list of entries """
         if self.entry_size() > 0:
             return self.entries[self.entry_size() - 1]
         return None
 
-    def remove_entry(self, key):
-        for entry in self.entries:
-            if entry.key == key:
-                self.entries.remove(entry)
-                break
-
     def remove_entry(self, entry):
+        """ Deletes an entry from list of entries """
         self.entries.remove(entry)
 
     def add_entries(self, entries):
+        """ Adds new entries into the list of entries """
         self.entries.extend(entries)
 
     def entries(self):
+        """ Returns list of entries """
         return self.entries
 
     def entry_size(self):
+        """ Returns the size of list of entries """
         return len(self.entries)
 
     def get_left_entries(self):
+        """ Returns left half of list of entries """
         return self.entries[0: self.entry_size() // 2]
 
     def get_right_entries(self):
+        """ Returns right half of list of entries """
         return self.entries[self.entry_size() // 2 + 1: self.entry_size()]
 
     def get_middle_entry(self):
+        """ Returns middle element from list of entries """
         return self.entries[self.entry_size() // 2]
 
     def get_middle_left_entry(self):
+        """ Returns left middle entry from list of entries """
         return self.entries[self.entry_size() // 2 - 1]
 
     def get_middle_right_entry(self):
+        """ Returns right middle entry from list of entries """
         return self.entries[self.entry_size() // 2 + 1]
 
     def left_entry(self, entry):
+        """ Returns an entry to the left of a given entry """
         index = index_of(self.entries, entry)
-        if index > 0 and index < self.entry_size():
+        if index in range(1, self.entry_size()):
             return self.entries[index - 1]
         return None
 
     def right_entry(self, entry):
+        """ Returns an entry to the right of a given entry """
         index = index_of(self.entries, entry)
-        if index >= 0 and index < self.entry_size() - 1:
+        if index in range(0, self.entry_size() - 1):
             return self.entries[index + 1]
         return None
 
 
 class Entry:
+    """ Entry class """
     def __init__(self, key, value, cont):
         self.key = key
         self.value = value
         self.left = None
 
-    def print_entry(self):
-        return "({0},{1},{2})".format(self.key, self.value, self.left)
-
+    """ Custom comparing function to compare int and strings """
     def compare_to(self, other):
         return (self.key > other.key) - (self.key < other.key)
+
+    """ Prints entry """
+    def print_entry(self):
+        return "({0},{1},{2})".format(self.key, self.value, self.left)
