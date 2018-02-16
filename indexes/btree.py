@@ -24,7 +24,7 @@ class BTree:
         self.root = Node()
         self.height = 0
         self.keys = [item.key() for item in table]
-        self.insert(table)
+        self.build_index(table)
 
     def split(self, node):
         """ Splitting the node if full """
@@ -227,10 +227,16 @@ class BTree:
         rid = self.search(key, self.root)
         return [rid.value] if rid is not None else None
 
-    def insert(self, list_of_items):
-        """ Insert preparation """
-        for rid, item in enumerate(list_of_items):
+    def build_index(self, table):
+        """ Building index from table """
+        for rid, item in enumerate(table):
             self._insert(item.key(), rid, self.root)
+
+    def insert(self, *keys):
+        """ Insert preparation """
+        for key in keys:
+            self.keys.append(key)
+            self._insert(key, len(self.keys) - 1, self.root)
 
     def delete(self, rid):
         """ Delete preparation """

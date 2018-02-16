@@ -7,22 +7,59 @@ from indexes.btree import BTree
 from indexes.hash_index import HashIndex
 
 
-def test_indexes(indexes, table, item_of_interest):
+def build_indexes(table, index_classes):
+    """
+    Builds indexes for table from the index_classes dict
+    :param table:           table of data
+    :param index_classes:   dict of index_classes
+    :return:                dictionary of built indexes
+    """
+    indexes = {}
+
+    for index_name in index_classes:
+        print("Building {} Index...".format(index_name))
+
+        # measuring built time
+        start = timeit.default_timer()
+        index = index_classes[index_name](table)
+        built_time = timeit.default_timer() - start
+
+        print("Built {} Index in: {:.7f} s".format(index_name, built_time))
+        print()
+
+        indexes[index_name] = index
+
+    return indexes
+
+
+def test_search(indexes, table, item_of_interest):
+    """
+    Tests search capabilities of given indexes
+    :param indexes:             a dictionary of indexes
+    :param table:               table for which indexes are built
+    :param item_of_interest:    searchable item
+    """
     naive_index_time = None
     for index_name in indexes:
         print("\n =============== {:^6} Index =============== ".format(index_name))
 
+        index = indexes[index_name]
+
         # measuring search time
         start = timeit.default_timer()
-        row_ids = indexes[index_name].look_up(item_of_interest.key())
+        row_ids = index.look_up(item_of_interest.key())
         search_time = timeit.default_timer() - start
 
-        print("Elapsed time for {}: {:.7f}".format(index_name, search_time))
+        print("Elapsed time for {}: {:.7f} s".format(index_name, search_time))
 
-        if index_name == 'Naive':
+        if isinstance(index, NaiveIndex):
             naive_index_time = search_time
         else:
-            print("Faster than Naive Search in {:.2f} times".format(naive_index_time / search_time))
+            factor = naive_index_time / search_time
+            if factor > 1.0:
+                print("Faster than Naive Search in {:.2f} times".format(naive_index_time / search_time))
+            else:
+                assert "Index is slower than Naive Search, what a shame :("
 
         print("Found {} item(-s)".format(len(row_ids)))
         for rid in row_ids:
@@ -31,6 +68,11 @@ def test_indexes(indexes, table, item_of_interest):
 
 
 def test_deletion(indexes, table):
+    """
+    Tests deletion capabilities of given indexes
+    :param indexes:             a dictionary of indexes
+    :param table:               table for which indexes are built
+    """
     print("Let's try to generate new item of interest.")
     new_item_of_interest = lstgen.get_item_of_interest(table)
     print("Random item: ({0}, {1})".format(new_item_of_interest.key(), new_item_of_interest.value()))
@@ -56,7 +98,7 @@ def test_deletion(indexes, table):
 
         if rid:
             item = table[rid[0]]
-            print("Oops... Got item: ({0}, {1})".format(item.key(), item.value()))
+            assert "Oops... Got item: ({0}, {1})".format(item.key(), item.value())
         else:
             print("Got item: " + str(rid))
             print("Deletion was successful!")
@@ -79,20 +121,17 @@ if __name__ == "__main__":
     # item_of_interest = lstgen.get_item_of_interest(lst)
     ################
 
-    print("Random item: ({0}, {1})".format(item_of_interest.key(), item_of_interest.value()))
+    print("Random item: ({0}, {1})\n".format(item_of_interest.key(), item_of_interest.value()))
 
-    naive_index = NaiveIndex(lst)
-    bitmap_index = BitmapIndex(lst)
-    btree_index = BTree(lst)
-    hash_index = HashIndex(lst)
-
-    indexes = {
-        'Naive': naive_index,
-        'Bitmap': bitmap_index,
-        'BTree': btree_index,
-        'Hash': hash_index
+    indexes_classes = {
+        'Naive': NaiveIndex,
+        'Bitmap': BitmapIndex,
+        'BTree': BTree,
+        'Hash': HashIndex
     }
 
-    test_indexes(indexes, lst, item_of_interest)
+    indexes = build_indexes(lst, indexes_classes)
 
-    # test_deletion(indexes, lst)
+    test_search(indexes, lst, item_of_interest)
+
+    test_deletion(indexes, lst)
