@@ -57,7 +57,7 @@ def test_search(indexes, table, item_of_interest):
         else:
             factor = naive_index_time / search_time
             print("Faster than Naive Search in {:.2f} times".format(naive_index_time / search_time))
-            assert factor < 1.0, "Index is slower than Naive Search, what a shame :("
+            assert factor >= 1.0, "Index is slower than Naive Search, what a shame :("
 
         print("Found {} item(-s)".format(len(row_ids)))
         for rid in row_ids:
