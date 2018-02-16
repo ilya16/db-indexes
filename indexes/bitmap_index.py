@@ -1,6 +1,5 @@
 from ctypes import *
 from math import ceil
-import timeit
 
 
 class BitmapIndex:
