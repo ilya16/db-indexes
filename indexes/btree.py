@@ -331,6 +331,6 @@ class Entry:
     def compare_to(self, other):
         return (self.key > other.key) - (self.key < other.key)
 
-    """ Prints entry """
-    def print_entry(self):
+    """ Returns entry """
+    def __str__(self):
         return "({0},{1},{2})".format(self.key, self.value, self.left)

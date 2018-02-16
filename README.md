@@ -4,14 +4,16 @@ This is a repository with implementation and comparison of
 non-clustered database indexes on Python programming language
 for the assignment in Advanced Databases course at Innopolis University.
 
+Authors: [Ilya Borovik](@ilya16), [Artur Khayaliev](@zytfo), [Boris Makaev](@Borisqa).
+
 The task was to implement three indexes:
-* B-Tree index
-* Hash index
-* Bitmap index
+* [B-Tree index](indexes/btree.py)
+* [Hash index](indexes/hash_index.py)
+* [Bitmap index](indexes/bitmap_index.py)
 
 Source code of indexes is provided in the package [indexes](indexes).
 
-Search capabilities of each index are compared with Naive index 
+Search capabilities of each index are compared with [Naive index](indexes/naive_index.py)
 (simple for-loop search).
 
 As a unit (row) of data in the table we use objects of class [Item](tables/item.py).

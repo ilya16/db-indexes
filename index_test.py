@@ -39,6 +39,7 @@ def test_search(indexes, table, item_of_interest):
     :param table:               table for which indexes are built
     :param item_of_interest:    searchable item
     """
+    print("\nTesting search...")
     naive_index_time = None
     for index_name in indexes:
         print("\n =============== {:^6} Index =============== ".format(index_name))
@@ -71,6 +72,7 @@ def test_deletion(indexes, table):
     :param indexes:             a dictionary of indexes
     :param table:               table for which indexes are built
     """
+    print("\nTesting deletion...")
     print("Let's try to generate new item of interest.")
     new_item_of_interest = lstgen.get_item_of_interest(table)
     print("Random item: ({0}, {1})".format(new_item_of_interest.key(), new_item_of_interest.value()))

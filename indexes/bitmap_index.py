@@ -247,12 +247,12 @@ class Bitmap:
             return True
         return False
 
-    def to_string(self):
+    def __str__(self):
         """
-        Print bit array as a string.
+        Returns a string representation of a bit array.
         :return:
         """
         acc = ''
         for i in range(0, self.cardinality):
             acc = str(self.test_bit(i)) + acc
-        print(acc)
+        return acc
