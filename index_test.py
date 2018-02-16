@@ -56,10 +56,8 @@ def test_search(indexes, table, item_of_interest):
             naive_index_time = search_time
         else:
             factor = naive_index_time / search_time
-            if factor > 1.0:
-                print("Faster than Naive Search in {:.2f} times".format(naive_index_time / search_time))
-            else:
-                assert "Index is slower than Naive Search, what a shame :("
+            print("Faster than Naive Search in {:.2f} times".format(naive_index_time / search_time))
+            assert factor < 1.0, "Index is slower than Naive Search, what a shame :("
 
         print("Found {} item(-s)".format(len(row_ids)))
         for rid in row_ids:
@@ -98,7 +96,7 @@ def test_deletion(indexes, table):
 
         if rid:
             item = table[rid[0]]
-            assert "Oops... Got item: ({0}, {1})".format(item.key(), item.value())
+            assert rid, "Oops... Got item: ({0}, {1})".format(item.key(), item.value())
         else:
             print("Got item: " + str(rid))
             print("Deletion was successful!")
