@@ -14,6 +14,7 @@ class NaiveIndex:
 
     def insert(self, key):
         self.keys.append(key)
+        self.is_deleted.append(False)
 
     def update(self, rid, key):
         self.keys[rid] = key

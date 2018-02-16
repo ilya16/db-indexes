@@ -1,6 +1,7 @@
 import timeit
 
 import tables.list_generators as lstgen
+from tables.item import Item
 from indexes.naive_index import NaiveIndex
 from indexes.bitmap_index import BitmapIndex
 from indexes.btree import BTree
@@ -39,7 +40,7 @@ def test_search(indexes, table, item_of_interest):
     :param table:               table for which indexes are built
     :param item_of_interest:    searchable item
     """
-    print("\nTesting search...")
+    print("\n\t\tTesting search...")
     naive_index_time = None
     for index_name in indexes:
         print("\n =============== {:^6} Index =============== ".format(index_name))
@@ -66,14 +67,59 @@ def test_search(indexes, table, item_of_interest):
             print("Got item: ({0}, {1})".format(item.key(), item.value()))
 
 
+def test_insertion(indexes, table, new_item):
+    """
+    Tests deletion capabilities of given indexes
+    :param indexes:             a dictionary of indexes
+    :param table:               table for which indexes are built
+    """
+    print("\n\t\tTesting insertion...")
+    print("Item to be inserted: ({0}, {1})".format(new_item.key(), new_item.value()))
+
+    print("Let's check whether the indexes contain the item with the same key.")
+    print("And then insert it and retrieve again.")
+    table.append(new_item)
+
+    for index_name in indexes:
+        print("\n =============== {:^6} Index =============== ".format(index_name))
+
+        index = indexes[index_name]
+
+        print("Trying to find ({0}, {1}) in the current index.".format(new_item.key(), new_item.value()))
+        row_ids = index.look_up(new_item.key())
+        if row_ids:
+            print("Found {} item(-s)".format(len(row_ids)))
+            for rid in row_ids:
+                item = table[rid]
+                print("Got item: ({0}, {1})".format(item.key(), item.value()))
+        else:
+            print("Found 0 item(-s)")
+
+        print("\nTrying to insert ({0}, {1}).".format(new_item.key(), new_item.value()))
+        index.insert(new_item.key())
+        print("Inserted. Now trying to find it")
+
+        row_ids = index.look_up(new_item.key())
+        items = [table[rid] for rid in row_ids]
+        print("Found {} item(-s)".format(len(row_ids)))
+        for rid in row_ids:
+            item = table[rid]
+            print("Got item: ({0}, {1})".format(item.key(), item.value()))
+
+        if new_item in items:
+            print("Insertion was successful!")
+        else:
+            print("Oops, item was not inserted...")
+
+
 def test_deletion(indexes, table):
     """
     Tests deletion capabilities of given indexes
     :param indexes:             a dictionary of indexes
     :param table:               table for which indexes are built
     """
-    print("\nTesting deletion...")
-    print("Let's try to generate new item of interest.")
+    print("\n\t\tTesting deletion...")
+    print("Let's try to generate a new item of interest.")
     new_item_of_interest = lstgen.get_item_of_interest(table)
     print("Random item: ({0}, {1})".format(new_item_of_interest.key(), new_item_of_interest.value()))
 
@@ -121,6 +167,7 @@ if __name__ == "__main__":
     # item_of_interest = lstgen.get_item_of_interest(lst)
     ################
 
+    print("Generated list L of {} items".format(len(lst)))
     print("Random item: ({0}, {1})\n".format(item_of_interest.key(), item_of_interest.value()))
 
     indexes_classes = {
@@ -133,5 +180,7 @@ if __name__ == "__main__":
     indexes = build_indexes(lst, indexes_classes)
 
     test_search(indexes, lst, item_of_interest)
+
+    test_insertion(indexes, lst, Item("advanced databases", "db indexes are cool"))
 
     test_deletion(indexes, lst)

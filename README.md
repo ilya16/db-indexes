@@ -4,7 +4,8 @@ This is a repository with implementation and comparison of
 non-clustered database indexes on Python programming language
 for the assignment in Advanced Databases course at Innopolis University.
 
-Authors: [Ilya Borovik](@ilya16), [Artur Khayaliev](@zytfo), [Boris Makaev](@Borisqa).
+Authors: [Ilya Borovik](https://github.com/ilya16), 
+    [Artur Khayaliev](https://github.com/zytfo), [Boris Makaev](https://github.com/Borisqa).
 
 The task was to implement three indexes:
 * [B-Tree index](indexes/btree.py)
@@ -31,7 +32,7 @@ determined we also provide a pregenerated file with items in the directory
 
 To test the indexes run the file `index_test.py` using a Python (>=3.6) interpreter.
 Default run includes construction of indexes for a table in the defined above file,
-search and deletion test.
+search, insertion and deletion tests.
 
 To change the configuration of tests, please, modify the code in the file
 [index_test.py](index_test.py). Comments in the file display other test options.
